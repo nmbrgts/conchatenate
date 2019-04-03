@@ -2,7 +2,10 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"sync"
+
+	"github.com/gorilla/websocket"
 )
 
 type ChatStore struct {
@@ -35,6 +38,33 @@ func Broadcaster() (chan chan string, chan string) {
 		}
 	}()
 	return register, broadcast
+}
+
+
+func BuildWSHandler(
+	register chan chan string,
+	broadcast chan string,
+) func(http.ResponseWriter, *http.Request) {
+	upgrader := websocket.Upgrader{}
+	return func(w http.ResponseWriter, r *http.Request) {
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			return
+		}
+		// write routine will foward values from this chan
+		receiver := make(chan string)
+		register <- receiver
+		// write routine
+		go func() {
+			for {
+				message := <-receiver
+				err := conn.WriteMessage(websocket.TextMessage, []byte(message))
+				if err != nil {
+					break
+				}
+			}
+		}()
+	}
 }
 
 func main() {

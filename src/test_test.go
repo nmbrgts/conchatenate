@@ -3,6 +3,10 @@ package main
 import (
 	"testing"
 	"time"
+	"net/http/httptest"
+	"strings"
+	"net/http"
+	"github.com/gorilla/websocket"
 )
 
 func TestChatStore(t *testing.T) {
@@ -81,6 +85,32 @@ func TestBroadcast(t *testing.T) {
 				t.Errorf(
 					"Expected doubly registered channel to receive on broadcast, but it received %d broadcasts",
 					respCount,
+				)
+			}
+		},
+	)
+}
+
+func TestWebSocket(t *testing.T) {
+	t.Run(
+		"Websocket handler should register a channel that it writes content from",
+		func (t *testing.T) {
+			want := "hallo, this is dog"
+			register := make(chan chan string)
+			broadcast := make(chan string)
+			testServer := httptest.NewServer(http.HandlerFunc(BuildWSHandler(register, broadcast)))
+			wsUrl := "ws" + strings.TrimPrefix(testServer.URL, "http")
+			ws, _, err := websocket.DefaultDialer.Dial(wsUrl, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			chan_ := <-register
+			go func () {chan_ <- want}()
+			_, got, err := ws.ReadMessage()
+			if string(got) != want {
+				t.Errorf(
+					"Expected WS to return \"%s\" instead, got \"%s\"",
+					want, got,
 				)
 			}
 		},
