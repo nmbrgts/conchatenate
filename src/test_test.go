@@ -2,6 +2,7 @@ package main
 
 import (
 	"testing"
+	"time"
 )
 
 func TestChatStore(t *testing.T) {
@@ -57,4 +58,31 @@ func TestBroadcast(t *testing.T) {
 				}
 			}
 		})
+	t.Run(
+		"Gracefully handle multiple registrations of the same channel",
+		func(t *testing.T) {
+			want := "hallo, this is dog"
+			register, broadcast := Broadcaster()
+			chan_ := make(chan string)
+			register <- chan_
+			register <- chan_
+			broadcast <- want
+			respCount := 0
+		L:
+			for {
+				select {
+				case <-chan_:
+					respCount++
+				case <-time.After(2 * time.Second):
+					break L
+				}
+			}
+			if respCount > 1 {
+				t.Errorf(
+					"Expected doubly registered channel to receive on broadcast, but it received %d broadcasts",
+					respCount,
+				)
+			}
+		},
+	)
 }

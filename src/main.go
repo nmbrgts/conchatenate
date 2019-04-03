@@ -20,15 +20,15 @@ func Broadcaster() (chan chan string, chan string) {
 	register := make(chan chan string)
 	broadcast := make(chan string)
 	go func() {
-		var chans []chan string
+		chans := make(map[chan string]bool)
 		for {
 			select {
 			case reg := <-register:
 				// register new channel
-				chans = append(chans, reg)
+				chans[reg] = true
 			case message := <-broadcast:
 				// broadcast to registered channels w/o blocking
-				for _, c := range chans {
+				for c, _ := range chans {
 					go func(c chan string) { c <- message }(c)
 				}
 			}
