@@ -40,7 +40,6 @@ func Broadcaster() (chan chan string, chan string) {
 	return register, broadcast
 }
 
-
 func BuildWSHandler(
 	register chan chan string,
 	broadcast chan string,
@@ -62,6 +61,16 @@ func BuildWSHandler(
 				if err != nil {
 					break
 				}
+			}
+		}()
+		// read routine
+		go func() {
+			for {
+				_, message, err := conn.ReadMessage()
+				if err != nil {
+					break
+				}
+				broadcast <- string(message)
 			}
 		}()
 	}

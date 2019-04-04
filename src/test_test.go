@@ -1,11 +1,12 @@
 package main
 
 import (
-	"testing"
-	"time"
+	"net/http"
 	"net/http/httptest"
 	"strings"
-	"net/http"
+	"testing"
+	"time"
+
 	"github.com/gorilla/websocket"
 )
 
@@ -94,7 +95,7 @@ func TestBroadcast(t *testing.T) {
 func TestWebSocket(t *testing.T) {
 	t.Run(
 		"Websocket handler should register a channel that it writes content from",
-		func (t *testing.T) {
+		func(t *testing.T) {
 			want := "hallo, this is dog"
 			register := make(chan chan string)
 			broadcast := make(chan string)
@@ -105,13 +106,42 @@ func TestWebSocket(t *testing.T) {
 				t.Fatal(err)
 			}
 			chan_ := <-register
-			go func () {chan_ <- want}()
+			go func() { chan_ <- want }()
 			_, got, err := ws.ReadMessage()
 			if string(got) != want {
 				t.Errorf(
-					"Expected WS to return \"%s\" instead, got \"%s\"",
+					"Expected WS to send \"%s\" instead, got \"%s\"",
 					want, got,
 				)
+			}
+		},
+	)
+	t.Run(
+		"Websocket handler should forward messages to the broadcast chanel",
+		func(t *testing.T) {
+			want := "hallo, this is dog"
+			register := make(chan chan string)
+			broadcast := make(chan string)
+			testServer := httptest.NewServer(http.HandlerFunc(BuildWSHandler(register, broadcast)))
+			wsUrl := "ws" + strings.TrimPrefix(testServer.URL, "http")
+			ws, _, err := websocket.DefaultDialer.Dial(wsUrl, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			<-register
+			err = ws.WriteMessage(websocket.TextMessage, []byte(want))
+			if err != nil {
+				t.Fatal(err)
+			}
+			got := "hallo, this is not dog"
+			select {
+			case got = <-broadcast:
+			case <-time.After(2 * time.Second):
+				t.Errorf("Expected WS handler to broadcast, but it never did")
+				return
+			}
+			if string(got) != want {
+				t.Errorf("Expected WS handler to broadcast \"%s\" instead, got \"%s\"", want, got)
 			}
 		},
 	)
