@@ -93,21 +93,29 @@ func TestBroadcast(t *testing.T) {
 }
 
 func TestWebSocket(t *testing.T) {
+	buildTestServer := func(t *testing.T) (*websocket.Conn, chan chan string, chan string) {
+		t.Helper()
+		register := make(chan chan string)
+		broadcast := make(chan string)
+		testServer := httptest.NewServer(http.HandlerFunc(BuildWSHandler(register, broadcast)))
+		wsUrl := "ws" + strings.TrimPrefix(testServer.URL, "http")
+		ws, _, err := websocket.DefaultDialer.Dial(wsUrl, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return ws, register, broadcast
+	}
 	t.Run(
 		"Websocket handler should register a channel that it writes content from",
 		func(t *testing.T) {
 			want := "hallo, this is dog"
-			register := make(chan chan string)
-			broadcast := make(chan string)
-			testServer := httptest.NewServer(http.HandlerFunc(BuildWSHandler(register, broadcast)))
-			wsUrl := "ws" + strings.TrimPrefix(testServer.URL, "http")
-			ws, _, err := websocket.DefaultDialer.Dial(wsUrl, nil)
-			if err != nil {
-				t.Fatal(err)
-			}
+			ws, register, _ := buildTestServer(t)
 			chan_ := <-register
 			go func() { chan_ <- want }()
 			_, got, err := ws.ReadMessage()
+			if err != nil {
+				t.Fatal(err)
+			}
 			if string(got) != want {
 				t.Errorf(
 					"Expected WS to send \"%s\" instead, got \"%s\"",
@@ -120,16 +128,9 @@ func TestWebSocket(t *testing.T) {
 		"Websocket handler should forward messages to the broadcast chanel",
 		func(t *testing.T) {
 			want := "hallo, this is dog"
-			register := make(chan chan string)
-			broadcast := make(chan string)
-			testServer := httptest.NewServer(http.HandlerFunc(BuildWSHandler(register, broadcast)))
-			wsUrl := "ws" + strings.TrimPrefix(testServer.URL, "http")
-			ws, _, err := websocket.DefaultDialer.Dial(wsUrl, nil)
-			if err != nil {
-				t.Fatal(err)
-			}
+			ws, register, broadcast := buildTestServer(t)
 			<-register
-			err = ws.WriteMessage(websocket.TextMessage, []byte(want))
+			err := ws.WriteMessage(websocket.TextMessage, []byte(want))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -143,6 +144,24 @@ func TestWebSocket(t *testing.T) {
 			if string(got) != want {
 				t.Errorf("Expected WS handler to broadcast \"%s\" instead, got \"%s\"", want, got)
 			}
+		},
+	)
+}
+
+func TestStoreWorker(t *testing.T) {
+	t.Run(
+		"StoreWorker should update store based in channel",
+		func (t *testing.T) {
+			want := "hallo, this is dog"
+			store := ChatStore{}
+			broadcast := make(chan string)
+			recieve := StoreWorker(store, broadcast)
+			recieve <- want
+			got := store.chat
+			if got != want {
+				t.Errorf("Expected WS handler to broadcast \"%s\" instead, got \"%s\"", want, got)
+			}
+
 		},
 	)
 }
