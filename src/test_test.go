@@ -155,13 +155,27 @@ func TestStoreWorker(t *testing.T) {
 			want := "hallo, this is dog"
 			store := ChatStore{}
 			broadcast := make(chan string)
-			recieve := StoreWorker(store, broadcast)
+			recieve := StoreWorker(&store, broadcast)
 			recieve <- want
 			got := store.chat
 			if got != want {
 				t.Errorf("Expected WS handler to broadcast \"%s\" instead, got \"%s\"", want, got)
 			}
-
+		},
+	)
+	t.Run(
+		"StoreWorker should breoadcast store's chat value",
+		func (t *testing.T) {
+			want := "hallo, this is dog"
+			store := ChatStore{}
+			broadcast := make(chan string)
+			recieve := StoreWorker(&store, broadcast)
+			recieve <- want
+			got := <-broadcast
+			want = store.chat
+			if got != want {
+				t.Errorf("Expected store value \"%s\" to mat broadcast value \"%s\"", want, got)
+			}
 		},
 	)
 }

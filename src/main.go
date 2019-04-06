@@ -19,6 +19,19 @@ func (cs *ChatStore) SWrite(s string) {
 	cs.chat = cs.chat + s
 }
 
+func StoreWorker(store *ChatStore, send chan string) chan string {
+	receive := make(chan string)
+	go func () {
+		for {
+			msg := <-receive
+			store.SWrite(msg)
+			send <- store.chat
+		}
+	} ()
+	return receive
+}
+
+
 func Broadcaster() (chan chan string, chan string) {
 	register := make(chan chan string)
 	broadcast := make(chan string)
