@@ -55,7 +55,7 @@ func Broadcaster() (chan chan string, chan string) {
 				chans[reg] = true
 			case message := <-broadcast:
 				// broadcast to registered channels w/o blocking
-				for c, _ := range chans {
+				for c := range chans {
 					go func(c chan string) { c <- message }(c)
 				}
 			}
