@@ -150,7 +150,7 @@ func TestWebSocket(t *testing.T) {
 
 func TestStoreWorker(t *testing.T) {
 	t.Run(
-		"StoreWorker should update store based in channel",
+		"StoreWorker should update store from messages sent to input channel",
 		func(t *testing.T) {
 			want := "hallo, this is dog"
 			store := ChatStore{}
@@ -159,7 +159,7 @@ func TestStoreWorker(t *testing.T) {
 			recieve <- want
 			got := store.chat
 			if got != want {
-				t.Errorf("Expected WS handler to broadcast \"%s\" instead, got \"%s\"", want, got)
+				t.Errorf("Expected store value to be \"%s\", instead got \"%s\"", want, got)
 			}
 		},
 	)
@@ -174,7 +174,7 @@ func TestStoreWorker(t *testing.T) {
 			got := <-broadcast
 			want = store.chat
 			if got != want {
-				t.Errorf("Expected store value \"%s\" to mat broadcast value \"%s\"", want, got)
+				t.Errorf("Expected broadcasted value to be \"%s\", instead got \"%s\"", want, got)
 			}
 		},
 	)

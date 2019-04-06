@@ -80,7 +80,7 @@ func BuildWSHandler(
 		if err != nil {
 			return
 		}
-		// write routine will foward values from this chan
+		// write routine will forward values from this chan
 		receiver := make(chan string)
 		register <- receiver
 		// write routine
