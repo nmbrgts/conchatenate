@@ -45,13 +45,13 @@ func TestBroadcast(t *testing.T) {
 				make(chan string),
 				make(chan string),
 			}
-			for _, chan_ := range chans {
-				register <- chan_
+			for _, channel := range chans {
+				register <- channel
 			}
 			broadcast <- want
 			gots := make(chan string)
-			for _, chan_ := range chans {
-				go func(c chan string) { gots <- <-c }(chan_)
+			for _, channel := range chans {
+				go func(c chan string) { gots <- <-c }(channel)
 			}
 			for i := 0; i < len(chans); i++ {
 				got := <-gots
@@ -68,15 +68,15 @@ func TestBroadcast(t *testing.T) {
 		func(t *testing.T) {
 			want := "hallo, this is dog"
 			register, broadcast := Broadcaster()
-			chan_ := make(chan string)
-			register <- chan_
-			register <- chan_
+			channel := make(chan string)
+			register <- channel
+			register <- channel
 			broadcast <- want
 			respCount := 0
 		L:
 			for {
 				select {
-				case <-chan_:
+				case <-channel:
 					respCount++
 				case <-time.After(2 * time.Second):
 					break L
@@ -110,8 +110,8 @@ func TestWebSocket(t *testing.T) {
 		func(t *testing.T) {
 			want := "hallo, this is dog"
 			ws, register, _ := buildTestServer(t)
-			chan_ := <-register
-			go func() { chan_ <- want }()
+			channel := <-register
+			go func() { channel <- want }()
 			_, got, err := ws.ReadMessage()
 			if err != nil {
 				t.Fatal(err)
@@ -151,7 +151,7 @@ func TestWebSocket(t *testing.T) {
 func TestStoreWorker(t *testing.T) {
 	t.Run(
 		"StoreWorker should update store based in channel",
-		func (t *testing.T) {
+		func(t *testing.T) {
 			want := "hallo, this is dog"
 			store := ChatStore{}
 			broadcast := make(chan string)
@@ -165,7 +165,7 @@ func TestStoreWorker(t *testing.T) {
 	)
 	t.Run(
 		"StoreWorker should breoadcast store's chat value",
-		func (t *testing.T) {
+		func(t *testing.T) {
 			want := "hallo, this is dog"
 			store := ChatStore{}
 			broadcast := make(chan string)
