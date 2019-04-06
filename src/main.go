@@ -1,13 +1,17 @@
+// Conchatenate: soon to be the world's worst overly concurrent chat app
 package main
 
 import (
+	"log"
 	"net/http"
 	"sync"
 
 	"github.com/gorilla/websocket"
-	"log"
 )
 
+// ChatStore is mutex proted string and the main storage for the chat app.
+// TODO: Flesh out an interface around ChatStore
+// TODO: Move to external storage.
 type ChatStore struct {
 	chat string
 	mux  sync.Mutex
@@ -19,19 +23,26 @@ func (cs *ChatStore) SWrite(s string) {
 	cs.chat = cs.chat + s
 }
 
+// StoreWorker is the process that handles writing to and broacasting
+// the updated store value.
+// TODO: Add process pooling
+// TODO: Refector to use buffered channel?
+// TODO: Refactor from single function to interface
 func StoreWorker(store *ChatStore, send chan string) chan string {
 	receive := make(chan string)
-	go func () {
+	go func() {
 		for {
 			msg := <-receive
 			store.SWrite(msg)
 			send <- store.chat
 		}
-	} ()
+	}()
 	return receive
 }
 
-
+// Broadcaster is the process that handles sending outgoing messages to all
+// websocket processes.
+// TODO: Interface?
 func Broadcaster() (chan chan string, chan string) {
 	register := make(chan chan string)
 	broadcast := make(chan string)
@@ -53,12 +64,14 @@ func Broadcaster() (chan chan string, chan string) {
 	return register, broadcast
 }
 
+// BuildWSHandler builds our websocket handler with provided send and receive channels.
+// TODO: Interface?
 func BuildWSHandler(
 	register chan chan string,
 	broadcast chan string,
 ) func(http.ResponseWriter, *http.Request) {
 	upgrader := websocket.Upgrader{
-		CheckOrigin: func (r *http.Request) bool {
+		CheckOrigin: func(r *http.Request) bool {
 			return true
 		},
 	}
