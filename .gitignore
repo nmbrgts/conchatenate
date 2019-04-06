@@ -1,0 +1,25 @@
+# common
+.DS_Store
+.idea
+*.log
+tmp/
+
+# elm
+# elm-package generated files
+elm-stuff
+# elm-repl generated files
+repl-temp-*
+
+# golang
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
