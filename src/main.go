@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"sync"
 
 	"github.com/gorilla/websocket"
+	"log"
 )
 
 type ChatStore struct {
@@ -57,7 +57,11 @@ func BuildWSHandler(
 	register chan chan string,
 	broadcast chan string,
 ) func(http.ResponseWriter, *http.Request) {
-	upgrader := websocket.Upgrader{}
+	upgrader := websocket.Upgrader{
+		CheckOrigin: func (r *http.Request) bool {
+			return true
+		},
+	}
 	return func(w http.ResponseWriter, r *http.Request) {
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
@@ -90,5 +94,9 @@ func BuildWSHandler(
 }
 
 func main() {
-	fmt.Println("Nothing to see here, yet...")
+	store := ChatStore{}
+	register, broadcast := Broadcaster()
+	receive := StoreWorker(&store, broadcast)
+	http.HandleFunc("/chat", BuildWSHandler(register, receive))
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
