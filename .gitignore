@@ -4,12 +4,6 @@
 *.log
 tmp/
 
-# elm
-# elm-package generated files
-elm-stuff
-# elm-repl generated files
-repl-temp-*
-
 # golang
 # Binaries for programs and plugins
 *.exe
