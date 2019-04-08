@@ -6,7 +6,7 @@ before_install:
 - go get -v github.com/gorilla/websocket
 - go get -t -v ./...
 before_script:
-- cd src
+- cd server
 script:
 - go test -race -coverprofile=coverage.txt -covermode=atomic
 after_script:
