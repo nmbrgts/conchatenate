@@ -5,6 +5,6 @@
 # Conchatenate
 Aiming to be the world's worst overly concurrent chat app :)
 
-# Architecture
+## Architecture
 If you squint long enough at the code, it starts looking like this:
 ![Diagram of Processes](https://nmbrgts.github.io/images/Conchatenate%20Architecture%20V0.jpg)
