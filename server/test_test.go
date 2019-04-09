@@ -26,7 +26,7 @@ func TestChatStore(t *testing.T) {
 			for i := 0; i < want; i++ {
 				<-done
 			}
-			got := len(chats.chat)
+			got := len(chats.SRead())
 			if want != got {
 				t.Errorf("Expected %d elements, got %d", want, got)
 			}
@@ -157,7 +157,7 @@ func TestStoreWorker(t *testing.T) {
 			broadcast := make(chan string)
 			recieve := StoreWorker(&store, broadcast)
 			recieve <- want
-			got := store.chat
+			got := store.SRead()
 			if got != want {
 				t.Errorf("Expected store value to be \"%s\", instead got \"%s\"", want, got)
 			}
@@ -172,7 +172,7 @@ func TestStoreWorker(t *testing.T) {
 			recieve := StoreWorker(&store, broadcast)
 			recieve <- want
 			got := <-broadcast
-			want = store.chat
+			want = store.SRead()
 			if got != want {
 				t.Errorf("Expected broadcasted value to be \"%s\", instead got \"%s\"", want, got)
 			}

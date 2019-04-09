@@ -17,10 +17,21 @@ type ChatStore struct {
 	mux  sync.Mutex
 }
 
+// SWrite is a safe write method that appends the string it is given to
+// the store.
 func (cs *ChatStore) SWrite(s string) {
 	defer cs.mux.Unlock()
 	cs.mux.Lock()
 	cs.chat = cs.chat + s
+}
+
+// SRead is a safe read mothode that returns the current chat string.
+// It should be safe to read without locks, but this will provide an
+// interface for refactoring later
+func (cs *ChatStore) SRead() string {
+	defer cs.mux.Unlock()
+	cs.mux.Lock()
+	return cs.chat
 }
 
 // StoreWorker is the process that handles writing to and broacasting
@@ -34,7 +45,7 @@ func StoreWorker(store *ChatStore, send chan string) chan string {
 		for {
 			msg := <-receive
 			store.SWrite(msg)
-			send <- store.chat
+			send <- store.SRead()
 		}
 	}()
 	return receive
