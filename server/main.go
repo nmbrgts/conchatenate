@@ -7,22 +7,38 @@ import (
 	"sync"
 
 	"github.com/gorilla/websocket"
+	"strings"
 )
 
 // ChatStore is mutex proted string and the main storage for the chat app.
 // TODO: Flesh out an interface around ChatStore
 // TODO: Move to external storage.
 type ChatStore struct {
-	chat string
-	mux  sync.Mutex
+	committedChat string
+	sep           string
+	activeMsgs    []string
+	indexMap      map[int]int
+	mux           sync.Mutex
 }
 
 // SWrite is a safe write method that appends the string it is given to
 // the store.
 func (cs *ChatStore) SWrite(s string) {
 	defer cs.mux.Unlock()
+	// static id for now, later SWrite will take an id as a unique
+	// Web Socket Handler identifier
+	id := 8675309
 	cs.mux.Lock()
-	cs.chat = cs.chat + s
+	if cs.indexMap == nil {
+		cs.indexMap = make(map[int]int)
+	}
+	ix, ok := cs.indexMap[id]
+	if !ok {
+		cs.activeMsgs = append(cs.activeMsgs, s)
+		cs.indexMap[id] = len(cs.activeMsgs) - 1
+		return
+	}
+	cs.activeMsgs[ix] += s
 }
 
 // SRead is a safe read mothode that returns the current chat string.
@@ -31,7 +47,7 @@ func (cs *ChatStore) SWrite(s string) {
 func (cs *ChatStore) SRead() string {
 	defer cs.mux.Unlock()
 	cs.mux.Lock()
-	return cs.chat
+	return cs.committedChat + strings.Join(cs.activeMsgs, cs.sep)
 }
 
 // StoreWorker is the process that handles writing to and broacasting
@@ -122,7 +138,7 @@ func main() {
 	register, broadcast := Broadcaster()
 	receive := StoreWorker(&store, broadcast)
 	http.HandleFunc("/chat", BuildWSHandler(register, receive))
-	http.HandleFunc("/", func (w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "../static/testpage.html")
 	})
 	log.Fatal(http.ListenAndServe(":8080", nil))
