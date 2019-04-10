@@ -29,7 +29,7 @@ func TestChatStore(t *testing.T) {
 		func(t *testing.T) {
 			want := "hallo, this is dog"
 			store := ChatStore{}
-			store.SWrite(want)
+			store.SWrite(1, want)
 			got := store.SRead()
 			if got != want {
 				t.Errorf(
@@ -46,7 +46,7 @@ func TestChatStore(t *testing.T) {
 			done := make(chan bool)
 			for i := 0; i < want; i++ {
 				go func(done chan bool) {
-					chats.SWrite("a")
+					chats.SWrite(1, "a")
 					done <- true
 				}(done)
 			}

@@ -23,11 +23,10 @@ type ChatStore struct {
 
 // SWrite is a safe write method that appends the string it is given to
 // the store.
-func (cs *ChatStore) SWrite(s string) {
+func (cs *ChatStore) SWrite(id int, s string) {
 	defer cs.mux.Unlock()
 	// static id for now, later SWrite will take an id as a unique
 	// Web Socket Handler identifier
-	id := 8675309
 	cs.mux.Lock()
 	if cs.indexMap == nil {
 		cs.indexMap = make(map[int]int)
@@ -60,7 +59,7 @@ func StoreWorker(store *ChatStore, send chan string) chan string {
 	go func() {
 		for {
 			msg := <-receive
-			store.SWrite(msg)
+			store.SWrite(1, msg)
 			send <- store.SRead()
 		}
 	}()
