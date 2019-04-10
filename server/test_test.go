@@ -12,7 +12,7 @@ import (
 
 func TestChatStore(t *testing.T) {
 	t.Run(
-		"Multi store should return an emtpy list when initialized",
+		"ChatStore should return an emtpy list when initialized",
 		func(t *testing.T) {
 			want := ""
 			store := ChatStore{}
@@ -25,7 +25,7 @@ func TestChatStore(t *testing.T) {
 		},
 	)
 	t.Run(
-		"Multi store should be read/write invariant with one writer",
+		"ChatStore should be read/write invariant with one writer",
 		func(t *testing.T) {
 			want := "hallo, this is dog"
 			store := ChatStore{}
