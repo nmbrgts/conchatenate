@@ -12,6 +12,33 @@ import (
 
 func TestChatStore(t *testing.T) {
 	t.Run(
+		"Multi store should return an emtpy list when initialized",
+		func(t *testing.T) {
+			want := ""
+			store := ChatStore{}
+			got := store.SRead()
+			if got != want {
+				t.Errorf(
+					"Expected store.SRead() to return \"%s\", but got \"%s\" instead",
+					want, got)
+			}
+		},
+	)
+	t.Run(
+		"Multi store should be read/write invariant with one writer",
+		func(t *testing.T) {
+			want := "hallo, this is dog"
+			store := ChatStore{}
+			store.SWrite(want)
+			got := store.SRead()
+			if got != want {
+				t.Errorf(
+					"Expected store.SRead() to return \"%s\", but got \"%s\" instead",
+					want, got)
+			}
+		},
+	)
+	t.Run(
 		"Length should equal total length of all concurrent SWrite values",
 		func(t *testing.T) {
 			chats := ChatStore{}
