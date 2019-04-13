@@ -47,9 +47,8 @@ func (cs *ChatStore) SRead() string {
 	cs.mux.Lock()
 	committedChat := cs.committedChat
 	activeMsgs := cs.activeMsgs
-	sep := cs.sep
 	cs.mux.Unlock()
-	return committedChat + strings.Join(activeMsgs, sep)
+	return committedChat + strings.Join(activeMsgs, ",")
 }
 
 // StoreWorker is the process that handles writing to and broacasting
