@@ -10,6 +10,6 @@ before_script:
 script:
 - go test -race -coverprofile=coverage.txt -covermode=atomic
 after_script:
-- bash <(curl -s https://codecov.io/bash)
+- 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then bash <(curl -s https://codecov.io/bash); fi'
 env:
   secure: HCamOn2VkmTIGwtsdjwhjpMJQ0CssOD8J4hJS9nzysNd9hWrml3uPxcF2vSlaPShF/1qbdXxrSvpSs78GLI+/CJiNHXmqYySZlj4QDfZPirfQFxFDBwMdA4x/4FfMeUkkQHdneBuvl6S8K/VurkASDStWOD48jYzWyB4cQIhe+Yjz50IbeHqArG8n72U4Ounc1hUfsMlc8CpbKUw+vzf4Zecv4o3aYJmbHp6jgdeR4AwtEKzARytSAiavqBD7WjD3yoU32oH75ccrooOzcoFBGVIZYub4MUJQvq9gQpOF2cLEDHLg5QFm42be2O9EAielr+aVqCrpsngHhMoMF8MpDI+c4tTkmdGQp8guTm68UXdhO+GtAHWAHSvOREaiaeyosi317OLShY+/RHwAYJMCp5EvR3QEYzATi+gPxasf/C1ivNiuFvVi4x6SvJMyVfnZr+WMzh+rhlRrWiIiSMAGMdy+O91aLoaj3e75uF4o9jP4MKbNtjxFD1Dbi69F4p+Z/a0FCL5Nb8aLl2scop3I97WT3ZpdSsCCQfCqTh5a+EeijhbujD/ZeDPAuG/PuYL1h2knpznnBebw0ZeOLJ1Gz4WvnhO78LXAVjym6vpTQ/tAVV7AgUp6wangzTE1uErkOwTMahNrRbyf98BSBBaHX9OPXhS5C7EPac3b5lJbLY=
