@@ -44,9 +44,12 @@ func (cs *ChatStore) SWrite(id int, s string) {
 // It should be safe to read without locks, but this will provide an
 // interface for refactoring later
 func (cs *ChatStore) SRead() string {
-	defer cs.mux.Unlock()
 	cs.mux.Lock()
-	return cs.committedChat + strings.Join(cs.activeMsgs, cs.sep)
+	committedChat := cs.committedChat
+	activeMsgs := cs.activeMsgs
+	sep := cs.sep
+	cs.mux.Unlock()
+	return committedChat + strings.Join(activeMsgs, sep)
 }
 
 // StoreWorker is the process that handles writing to and broacasting
