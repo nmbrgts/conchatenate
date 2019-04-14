@@ -141,7 +141,7 @@ func main() {
 	receive := StoreWorker(&store, broadcast)
 	http.HandleFunc("/chat", BuildWSHandler(register, receive))
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "/static/testpage.html")
+		http.ServeFile(w, r, "static/testpage.html")
 	})
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
