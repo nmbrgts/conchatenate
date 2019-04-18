@@ -5,9 +5,8 @@ type Message interface {
 	GetMessageContent() (string, bool)
 }
 
-
 type IdMessage struct {
-	id int
+	id      int
 	content string
 }
 
