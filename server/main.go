@@ -10,16 +10,16 @@ import (
 // Registrar is a shared data structure for IDing unique handler processes.
 type Registrar struct {
 	count int
-	mux   sync.Mutex
+	sync.Mutex
 }
 
 // Register returns a unique int to the process that calls it.
 // This value is used internally as an identifier for websocket handlers
 func (r *Registrar) Register() int {
-	r.mux.Lock()
+	r.Lock()
 	id := r.count
 	r.count++
-	r.mux.Unlock()
+	r.Unlock()
 	return id
 }
 
