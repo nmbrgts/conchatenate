@@ -2,7 +2,7 @@ package main
 
 type Message interface {
 	GetSenderId() (int, bool)
-	GetMessageContent() (string, bool)
+	GetContent() (string, bool)
 }
 
 type IdMessage struct {
