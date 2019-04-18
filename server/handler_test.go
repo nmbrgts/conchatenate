@@ -11,10 +11,10 @@ import (
 )
 
 func TestWebSocket(t *testing.T) {
-	buildTestServer := func(t *testing.T) (*websocket.Conn, chan chan string, chan string) {
+	buildTestServer := func(t *testing.T) (*websocket.Conn, chan chan string, chan Message) {
 		t.Helper()
 		register := make(chan chan string)
-		broadcast := make(chan string)
+		broadcast := make(chan Message)
 		testServer := httptest.NewServer(http.HandlerFunc(BuildWSHandler(register, broadcast)))
 		wsUrl := "ws" + strings.TrimPrefix(testServer.URL, "http")
 		ws, _, err := websocket.DefaultDialer.Dial(wsUrl, nil)
@@ -54,7 +54,8 @@ func TestWebSocket(t *testing.T) {
 			}
 			got := "hallo, this is not dog"
 			select {
-			case got = <-broadcast:
+			case msg := <-broadcast:
+				got, _ = msg.GetContent()
 			case <-time.After(2 * time.Second):
 				t.Errorf("Expected WS handler to broadcast, but it never did")
 				return

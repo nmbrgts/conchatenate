@@ -52,12 +52,14 @@ func (cs *ChatStore) SRead() string {
 // TODO: Add process pooling
 // TODO: Refector to use buffered channel?
 // TODO: Refactor from single function to interface
-func StoreWorker(store *ChatStore, send chan string) chan string {
-	receive := make(chan string)
+func StoreWorker(store *ChatStore, send chan string) chan Message {
+	receive := make(chan Message)
 	go func() {
 		for {
 			msg := <-receive
-			store.SWrite(1, msg)
+			id, _ := msg.GetSenderId()
+			content, _ := msg.GetContent()
+			store.SWrite(id, content)
 			send <- store.SRead()
 		}
 	}()

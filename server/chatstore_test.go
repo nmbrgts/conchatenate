@@ -90,7 +90,7 @@ func TestStoreWorker(t *testing.T) {
 			store := ChatStore{}
 			broadcast := make(chan string)
 			receive := StoreWorker(&store, broadcast)
-			receive <- want
+			receive <- PlainMessage{want}
 			got := store.SRead()
 			if got != want {
 				t.Errorf("Expected store value to be \"%s\", instead got \"%s\"", want, got)
@@ -104,7 +104,7 @@ func TestStoreWorker(t *testing.T) {
 			store := ChatStore{}
 			broadcast := make(chan string)
 			receive := StoreWorker(&store, broadcast)
-			receive <- want
+			receive <- PlainMessage{want}
 			got := <-broadcast
 			want = store.SRead()
 			if got != want {
