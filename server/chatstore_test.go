@@ -103,7 +103,7 @@ func TestChatStore(t *testing.T) {
 			senderId := 1
 			msg := "a"
 			store := ChatStore{sep: "."}
-			for i := 0; i < 9 ; i ++ {
+			for i := 0; i < 9; i++ {
 				store.SWrite(senderId, msg)
 				store.ShiftCursor(senderId)
 			}
@@ -149,7 +149,7 @@ func TestStoreWorker(t *testing.T) {
 	)
 	t.Run(
 		"StoreWorker progressex sender's cursor in response to NilMessage",
-		func (t *testing.T) {
+		func(t *testing.T) {
 			senderId := 42
 			msg := "hallo, this is dog"
 			sep := "->0<-"

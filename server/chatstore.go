@@ -47,7 +47,6 @@ func (cs *ChatStore) SRead() string {
 	return committedChat + strings.Join(activeMsgs, sep)
 }
 
-
 // ShiftCursor is a concurrency safe method that moves the current sender ID
 // "cursor" to a new entry at the end of the chat.
 func (cs *ChatStore) ShiftCursor(id int) {
