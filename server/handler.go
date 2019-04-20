@@ -46,7 +46,12 @@ func BuildWSHandler(
 				if err != nil {
 					break
 				}
-				broadcast <- IdMessage{id, string(message)}
+				content := string(message)
+				if content == "ENTER" {
+					broadcast <- NilMessage{id}
+				} else {
+					broadcast <- IdMessage{id, content}
+				}
 			}
 		}()
 	}

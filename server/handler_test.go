@@ -65,4 +65,28 @@ func TestWebSocket(t *testing.T) {
 			}
 		},
 	)
+	t.Run(
+		"Websocket handler should emit a NilMessage when it recieves \"ENTER\"",
+		func(t *testing.T) {
+			msg := "ENTER"
+			want := NilMessage{0}
+			ws, register, broadcast := buildTestServer(t)
+			<-register
+			err := ws.WriteMessage(websocket.TextMessage, []byte(msg))
+			if err != nil {
+				t.Fatal(err)
+			}
+			select {
+			case got := <-broadcast:
+				switch got.(type) {
+				case NilMessage:
+				default:
+					t.Errorf("Expected WS handler to broadcast type %T, but got %T instead", want, got)
+				}
+			case <-time.After(2 * time.Second):
+				t.Errorf("Expected WS handler to broadcast, but it never did")
+				return
+			}
+		},
+	)
 }
