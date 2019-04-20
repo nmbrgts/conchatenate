@@ -150,10 +150,23 @@ func TestStoreWorker(t *testing.T) {
 	t.Run(
 		"StoreWorker progressex sender's cursor in response to NilMessage",
 		func (t *testing.T) {
+			senderId := 42
 			msg := "hallo, this is dog"
 			sep := "->0<-"
 			want := msg + sep + msg
-
+			store := ChatStore{sep: sep}
+			broadcast := make(chan string, 10)
+			recieve := StoreWorker(&store, broadcast)
+			recieve <- IdMessage{senderId, msg}
+			recieve <- NilMessage{senderId}
+			recieve <- IdMessage{senderId, msg}
+			got := "who dis?"
+			for i := 0; i < 3; i++ {
+				got = <-broadcast
+			}
+			if got != want {
+				t.Errorf("Expected broadcasted value to be \"%s\", instead got \"%s\"", want, got)
+			}
 		},
 	)
 }

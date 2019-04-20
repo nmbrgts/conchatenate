@@ -68,8 +68,12 @@ func StoreWorker(store *ChatStore, send chan string) chan Message {
 		for {
 			msg := <-receive
 			id, _ := msg.GetSenderId()
-			content, _ := msg.GetContent()
-			store.SWrite(id, content)
+			content, gotContent := msg.GetContent()
+			if gotContent {
+				store.SWrite(id, content)
+			} else {
+				store.ShiftCursor(id)
+			}
 			send <- store.SRead()
 		}
 	}()
