@@ -80,6 +80,41 @@ func TestChatStore(t *testing.T) {
 			}
 		},
 	)
+	t.Run(
+		"ChatStore injects sep member between entries",
+		func(t *testing.T) {
+			msg := "hallo, this is dog"
+			sep := "<||>"
+			want := msg + sep + msg
+			store := ChatStore{sep: sep}
+			store.SWrite(0, msg)
+			store.SWrite(1, msg)
+			got := store.SRead()
+			if want != got {
+				t.Errorf("Expect ChatSore to read out \"%s\", but got \"%s\"",
+					want, got)
+			}
+		},
+	)
+	t.Run(
+		"`ShiftCursor` method moves sender id to a new index in the chat",
+		func(t *testing.T) {
+			want := "a.a.a.a.a.a.a.a.a.a"
+			senderId := 1
+			msg := "a"
+			store := ChatStore{sep: "."}
+			for i := 0; i < 9 ; i ++ {
+				store.SWrite(senderId, msg)
+				store.ShiftCursor(senderId)
+			}
+			store.SWrite(senderId, msg)
+			got := store.SRead()
+			if want != got {
+				t.Errorf("Expect ChatSore to read out \"%s\", but got \"%s\"",
+					want, got)
+			}
+		},
+	)
 }
 
 func TestStoreWorker(t *testing.T) {
@@ -110,6 +145,15 @@ func TestStoreWorker(t *testing.T) {
 			if got != want {
 				t.Errorf("Expected broadcasted value to be \"%s\", instead got \"%s\"", want, got)
 			}
+		},
+	)
+	t.Run(
+		"StoreWorker progressex sender's cursor in response to NilMessage",
+		func (t *testing.T) {
+			msg := "hallo, this is dog"
+			sep := "->0<-"
+			want := msg + sep + msg
+
 		},
 	)
 }
