@@ -52,6 +52,9 @@ func (cs *ChatStore) SRead() string {
 func (cs *ChatStore) ShiftCursor(id int) {
 	defer cs.Unlock()
 	cs.Lock()
+	if cs.indexMap == nil {
+		cs.indexMap = make(map[int]int)
+	}
 	cs.indexMap[id] = len(cs.activeMsgs)
 	cs.activeMsgs = append(cs.activeMsgs, "")
 }
