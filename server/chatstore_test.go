@@ -126,6 +126,7 @@ func TestStoreWorker(t *testing.T) {
 			broadcast := make(chan string)
 			receive := StoreWorker(&store, broadcast)
 			receive <- PlainMessage{want}
+			<-broadcast
 			got := store.SRead()
 			if got != want {
 				t.Errorf("Expected store value to be \"%s\", instead got \"%s\"", want, got)
@@ -133,7 +134,7 @@ func TestStoreWorker(t *testing.T) {
 		},
 	)
 	t.Run(
-		"StoreWorker should breoadcast store's chat value",
+		"StoreWorker should broadcast store's chat value",
 		func(t *testing.T) {
 			want := "hallo, this is dog"
 			store := ChatStore{}
