@@ -27,7 +27,13 @@
                 console.log("sending: " + e.key.toUpperCase())
                 websocket.send(e.key.toUpperCase())
             } else {
-                console.log("didn't send: " + e.key)
+                var key = e.key.toUpper()
+                if (key === 'ENTER') {
+                    websocket.send(key)
+                    console.log("sent nil msg")
+                } else {
+                    console.log("didn't send: " + e.key)
+                }
             }
         })
     }
