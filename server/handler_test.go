@@ -11,10 +11,10 @@ import (
 )
 
 func TestWebSocket(t *testing.T) {
-	buildTestServer := func(t *testing.T) (*websocket.Conn, chan chan string, chan string) {
+	buildTestServer := func(t *testing.T) (*websocket.Conn, chan chan string, chan Message) {
 		t.Helper()
 		register := make(chan chan string)
-		broadcast := make(chan string)
+		broadcast := make(chan Message)
 		testServer := httptest.NewServer(http.HandlerFunc(BuildWSHandler(register, broadcast)))
 		wsUrl := "ws" + strings.TrimPrefix(testServer.URL, "http")
 		ws, _, err := websocket.DefaultDialer.Dial(wsUrl, nil)
@@ -54,13 +54,38 @@ func TestWebSocket(t *testing.T) {
 			}
 			got := "hallo, this is not dog"
 			select {
-			case got = <-broadcast:
+			case msg := <-broadcast:
+				got, _ = msg.GetContent()
 			case <-time.After(2 * time.Second):
 				t.Errorf("Expected WS handler to broadcast, but it never did")
 				return
 			}
 			if string(got) != want {
 				t.Errorf("Expected WS handler to broadcast \"%s\" instead, got \"%s\"", want, got)
+			}
+		},
+	)
+	t.Run(
+		"Websocket handler should emit a NilMessage when it recieves \"ENTER\"",
+		func(t *testing.T) {
+			msg := "ENTER"
+			want := NilMessage{0}
+			ws, register, broadcast := buildTestServer(t)
+			<-register
+			err := ws.WriteMessage(websocket.TextMessage, []byte(msg))
+			if err != nil {
+				t.Fatal(err)
+			}
+			select {
+			case got := <-broadcast:
+				switch got.(type) {
+				case NilMessage:
+				default:
+					t.Errorf("Expected WS handler to broadcast type %T, but got %T instead", want, got)
+				}
+			case <-time.After(2 * time.Second):
+				t.Errorf("Expected WS handler to broadcast, but it never did")
+				return
 			}
 		},
 	)

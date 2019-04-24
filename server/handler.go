@@ -6,11 +6,14 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// we'll use this later to register an ID for the handler
+var registrar = Registrar{}
+
 // BuildWSHandler builds our websocket handler with provided send and receive channels.
 // TODO: Interface?
 func BuildWSHandler(
 	register chan chan string,
-	broadcast chan string,
+	broadcast chan Message,
 ) func(http.ResponseWriter, *http.Request) {
 	upgrader := websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
@@ -25,6 +28,7 @@ func BuildWSHandler(
 		// write routine will forward values from this chan
 		receiver := make(chan string)
 		register <- receiver
+		id := registrar.Register()
 		// write routine
 		go func() {
 			for {
@@ -42,7 +46,12 @@ func BuildWSHandler(
 				if err != nil {
 					break
 				}
-				broadcast <- string(message)
+				content := string(message)
+				if content == "ENTER" {
+					broadcast <- NilMessage{id}
+				} else {
+					broadcast <- IdMessage{id, content}
+				}
 			}
 		}()
 	}

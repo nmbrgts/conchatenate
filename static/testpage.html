@@ -20,9 +20,12 @@
         websocket.onmessage = function(evt) { onMessage(evt) };
         websocket.onerror = function(evt) { onError(evt) };
         window.addEventListener("keydown", function (e) {
-            if (e.key.length == 1) {
+            if (e.key.length === 1) {
                 console.log("sending: " + e.key)
                 websocket.send(e.key)
+            } else if (e.key.toUpperCase() === "ENTER") {
+                console.log("sending: " + e.key.toUpperCase())
+                websocket.send(e.key.toUpperCase())
             } else {
                 console.log("didn't send: " + e.key)
             }

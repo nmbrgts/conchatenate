@@ -13,16 +13,16 @@ type ChatStore struct {
 	sep           string
 	activeMsgs    []string
 	indexMap      map[int]int
-	mux           sync.Mutex
+	sync.Mutex
 }
 
 // SWrite is a safe write method that appends the string it is given to
 // the store.
 func (cs *ChatStore) SWrite(id int, s string) {
-	defer cs.mux.Unlock()
+	defer cs.Unlock()
 	// static id for now, later SWrite will take an id as a unique
 	// Web Socket Handler identifier
-	cs.mux.Lock()
+	cs.Lock()
 	if cs.indexMap == nil {
 		cs.indexMap = make(map[int]int)
 	}
@@ -35,16 +35,28 @@ func (cs *ChatStore) SWrite(id int, s string) {
 	cs.activeMsgs[ix] += s
 }
 
-// SRead is a safe read mothode that returns the current chat string.
+// SRead is a safe read method that returns the current chat string.
 // It should be safe to read without locks, but this will provide an
 // interface for refactoring later
 func (cs *ChatStore) SRead() string {
-	cs.mux.Lock()
+	cs.Lock()
 	committedChat := cs.committedChat
 	activeMsgs := cs.activeMsgs
 	sep := cs.sep
-	cs.mux.Unlock()
+	cs.Unlock()
 	return committedChat + strings.Join(activeMsgs, sep)
+}
+
+// ShiftCursor is a concurrency safe method that moves the current sender ID
+// "cursor" to a new entry at the end of the chat.
+func (cs *ChatStore) ShiftCursor(id int) {
+	defer cs.Unlock()
+	cs.Lock()
+	if cs.indexMap == nil {
+		cs.indexMap = make(map[int]int)
+	}
+	cs.indexMap[id] = len(cs.activeMsgs)
+	cs.activeMsgs = append(cs.activeMsgs, "")
 }
 
 // StoreWorker is the process that handles writing to and broacasting
@@ -52,12 +64,18 @@ func (cs *ChatStore) SRead() string {
 // TODO: Add process pooling
 // TODO: Refector to use buffered channel?
 // TODO: Refactor from single function to interface
-func StoreWorker(store *ChatStore, send chan string) chan string {
-	receive := make(chan string)
+func StoreWorker(store *ChatStore, send chan string) chan Message {
+	receive := make(chan Message)
 	go func() {
 		for {
 			msg := <-receive
-			store.SWrite(1, msg)
+			id, _ := msg.GetSenderId()
+			content, gotContent := msg.GetContent()
+			if gotContent {
+				store.SWrite(id, content)
+			} else {
+				store.ShiftCursor(id)
+			}
 			send <- store.SRead()
 		}
 	}()
