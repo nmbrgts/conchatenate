@@ -24,7 +24,13 @@
                 console.log("sending: " + e.key)
                 websocket.send(e.key)
             } else {
-                console.log("didn't send: " + e.key)
+                var key = e.key.toUpper()
+                if (key === 'ENTER') {
+                    websocket.send(key)
+                    console.log("sent nil msg")
+                } else {
+                    console.log("didn't send: " + e.key)
+                }
             }
         })
     }
