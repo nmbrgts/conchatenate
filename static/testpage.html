@@ -1,6 +1,6 @@
   <!DOCTYPE html>
   <meta charset="utf-8" />
-  <title>WebSocket Test</title>
+  <title>Conchatenate!</title>
   <script language="javascript" type="text/javascript">
 
   var wsUri = `ws://${window.location.host}/chat`;
@@ -15,7 +15,7 @@
     function testWebSocket()
     {
         websocket = new WebSocket(wsUri);
-        websocket.onopen = function(evt) { onOpen(evt) };
+        websocket.onopen = function(evt) { onOpen(evt); websocket.send("") };
         websocket.onclose = function(evt) { onClose(evt) };
         websocket.onmessage = function(evt) { onMessage(evt) };
         websocket.onerror = function(evt) { onError(evt) };
@@ -80,6 +80,12 @@
 
   </script>
 
-  <h2>WebSocket Test</h2>
+  <h2>Conchatenate</h2>
+  <p>Welcome to Conchatenate!</p> 
+  <p>If I didn't push broken code to master, you should be seeing the chat as it is typed ;)</p>
+  <p>Join in by typing a message you'd like to share with the chat.</p> 
+  <p>Hit enter at any time to get a new cursor towards the tail end of the chat.</p> 
+  <p>Your cursor is always at the end of you current message.</p>
+  <p>No backspaces are allowed.</p>
 
   <div id="output"></div>

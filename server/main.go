@@ -24,7 +24,7 @@ func (r *Registrar) Register() int {
 }
 
 func main() {
-	store := ChatStore{}
+	store := ChatStore{sep: ". "}
 	register, broadcast := Broadcaster()
 	receive := StoreWorker(&store, broadcast)
 	http.HandleFunc("/chat", BuildWSHandler(register, receive))
