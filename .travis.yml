@@ -15,6 +15,7 @@ script:
 - go test -race -coverprofile=coverage.txt -covermode=atomic
 after_script:
 - bash <(curl -s https://codecov.io/bash)
+- cd ..
 - export TAG=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo latest; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi)
 - docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
 - export IMAGE_NAME="$DOCKER_USER/conchatenate:$TAG" 
